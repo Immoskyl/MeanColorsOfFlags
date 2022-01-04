@@ -1,12 +1,13 @@
 #!/usr/bin/python3
-
+import codecs
 import os
 import matplotlib.pyplot as plt
 from PIL import Image
 import requests
 from io import BytesIO
 
-def getImage(path) :
+
+def get_image(path):
     response = requests.get(path)
     print(path)
     try:
@@ -16,7 +17,7 @@ def getImage(path) :
     return img
 
 
-def saveMeanColor(img, name):
+def save_mean_color(img, name, iso):
     f, ax = plt.subplots()
     color_means = [0, 0, 0]
 
@@ -45,22 +46,27 @@ def saveMeanColor(img, name):
                     labelright='off', labelbottom='off')
     if not os.path.exists("flag_means"):
         os.mkdir("flag_means")
-    f.savefig("flag_means/"+name, dpi=100, bbox_inches='tight', pad_inches=-0.5)
+    f.savefig("flag_means/"+iso, dpi=100, bbox_inches='tight', pad_inches=-0.5)
     plt.close()
     return to_file_str
 
 
 def get_all_flags():
     to_file_str = "Mean color of all country flags (R, G, B)\n"
-    for line in open("country_flags", 'r').readlines():
-        line = line.lower().strip("\n")
-        url = "https://flagcdn.com/w20/{isocode}.png".format(isocode=line)
+    for line in codecs.open(r"country_names", encoding="utf8").readlines():
+        name, iso_code = line.split("#")
+        iso_code = iso_code.lower().strip("\n").strip("\r")
+        name = name.rstrip()
+        url = "https://flagcdn.com/w20/{isocode}.png".format(isocode=iso_code)
+
         try:
-            img = getImage(url)
+            img = get_image(url)
         except IOError:
-            print("{name} not found".format(name=line))
+            print("{name} not found".format(name=iso_code))
             continue
-        to_file_str += saveMeanColor(img, line)
+
+        to_file_str += save_mean_color(img, name, iso_code)
+
     f = open("flag_means.txt", "w")
     f.write(to_file_str)
     f.close()
