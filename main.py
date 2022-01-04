@@ -6,16 +6,20 @@ from io import BytesIO
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
-def getImage(path):
+def getImage(path) :
     response = requests.get(path)
-    return Image.open(BytesIO(response.content)).convert('RGB')
+    print(path)
+    try:
+        img = Image.open(BytesIO(response.content)).convert('RGB')
+    except:
+        raise IOError
+    return img
 
 
 def saveMeanColor(img, name):
     f, ax = plt.subplots()
     color_means = [0, 0, 0]
 
-    print("IMG", img.getdata())
     pixel_list = list(img.getdata())
     print("pixel list:", pixel_list)
     print("w:", img.width, "h:", img.height)
@@ -40,12 +44,15 @@ def get_all_flags():
     for line in open("country_flags", 'r').readlines():
         line = line.lower().strip("\n")
         url = "https://flagcdn.com/w20/{isocode}.png".format(isocode=line)
-        img = getImage(url)
+        try:
+            img = getImage(url)
+        except IOError as e:
+            continue
         saveMeanColor(img, line)
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    saveMeanColor(getImage("https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Flag_of_Algeria.svg/langfr-225px-Flag_of_Algeria.svg.png"), "drapeau norvégien")
-    #get_all_flags()
+    #saveMeanColor(getImage("https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Flag_of_Algeria.svg/langfr-225px-Flag_of_Algeria.svg.png"), "drapeau norvégien")
+    get_all_flags()
 
