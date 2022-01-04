@@ -8,7 +8,7 @@ def chunker(seq, size):
 
 def getImage(path):
     response = requests.get(path)
-    return Image.open(BytesIO(response.content))
+    return Image.open(BytesIO(response.content)).convert('RGB')
 
 
 def saveMeanColor(img, name):
@@ -17,14 +17,18 @@ def saveMeanColor(img, name):
 
     print("IMG", img.getdata())
     pixel_list = list(img.getdata())
-    #print("pixel list:", pixel_list)
+    print("pixel list:", pixel_list)
+    print("w:", img.width, "h:", img.height)
+    print("pixel nb", img.width * img.height, "pixel list len", len(pixel_list))
 
-    for r, g, b in chunker(pixel_list, 3):
-        color_means[0] += r
-        color_means[1] += g
-        color_means[2] += b
+    for i in pixel_list:
+        color_means[0] += i[0]
+        color_means[1] += i[1]
+        color_means[2] += i[2]
 
-    color_means[0] /= len(pixel_list)/3 * 255
+    color_means[0] /= len(pixel_list) * 255
+    color_means[1] /= len(pixel_list) * 255
+    color_means[2] /= len(pixel_list) * 255
     print("color_means: ", color_means)
 
     plt.fill_between([0, 1], [1], [0], color=tuple(color_means))
@@ -42,6 +46,6 @@ def get_all_flags():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    #saveMeanColor(getImage("https://www.google.com/url?sa=i&url=https%3A%2F%2Ffr.geneawiki.com%2Findex.php%3Ftitle%3DFichier%3ADrapeau_Norvege.png&psig=AOvVaw1gdi9W_srDup4JO0Dbyzm1&ust=1641341277646000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCKiE2e_mlvUCFQAAAAAdAAAAABAD"), "drapeau norvégien")
-    get_all_flags()
+    saveMeanColor(getImage("https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Flag_of_Algeria.svg/langfr-225px-Flag_of_Algeria.svg.png"), "drapeau norvégien")
+    #get_all_flags()
 
